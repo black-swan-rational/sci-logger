@@ -71,9 +71,11 @@ def save(params, code):
     """
     """pusnem"""
     os.chdir(gitbase)
-    message = "Loger commit"
+    time = datetime.datetime.now()
+    
+    message = " 'Loger commit: "+str(time) + "'"
     print "Committing"
-    print subprocess.check_output('git commit -m '+ message, shell=True)
+    print subprocess.check_output('git commit -am '+ message, shell=True)
     commitid = subprocess.check_output("git rev-parse HEAD", shell=True)
     """pustim kod"""
     
