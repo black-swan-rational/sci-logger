@@ -77,7 +77,7 @@ def save(params, code):
     print "Committing"
     print subprocess.check_output('git commit -am '+ message, shell=True)
     commitid = subprocess.check_output("git rev-parse HEAD", shell=True)
-    """pustim kod"""
+    """pustim kodik"""
     
     os.chdir(base)
     outcome = subprocess.check_output(code, shell=True)
