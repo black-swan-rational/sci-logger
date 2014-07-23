@@ -2,31 +2,33 @@ import sqlite3 as sql
 import os, sys
 import getopt
 import datetime
+import subprocess
 
 base = os.getcwd()
-workbase = base+"/snaps/" 
+gitbase = subprocess.check_output('git rev-parse --show-toplevel', shell= True).strip('\n')
+end = "/snaps/" 
 
 def routinecheck():
     """kukni ci mas pozadovanu strukturu, ak nie tak vytvor"""
     print "i am at: "+base
-        
+    print "git is: "+ gitbase
     """filova struktura"""
     try:
-        os.stat(workbase)
+        os.stat(base+end)
     except:
         print "creating snaps"
-        os.mkdir(workbase)
+        os.mkdir(base+end)
     
     """zoznam suborov + databaz"""
-    f = open(workbase+"list","a")
+    f = open(base+end+"list","a")
     f.close()
     
-    f = open(workbase+"runs","a")
+    f = open(base+end+"runs","a")
     f.close()
     
 
 
-def add(fil):
+def add(fil): #ked je git tak pointless
     """klasicka rutina + adnutie filu"""
     routinecheck()
     realfile = base+"/"+fil
@@ -55,9 +57,8 @@ def save(params, code):
     routinecheck()
     """asi najlepsie bude, ked sa forkne, lebo to moze trochu trvat""" #todo
     
-    """pustime kod"""
-    
     """posavujeme dokumenty"""
+    """
     f = open(workbase+"list","r")
     zoznam = f.read()
     f.close()
@@ -67,8 +68,29 @@ def save(params, code):
             print "Bad list format" #neni dobry zoznam suborov. pokracovat aj tak?
             sys.exit(0)
         else:
-            
-
+    """
+    """pusnem"""
+    os.chdir(gitbase)
+    message = "Loger commit"
+    print "Committing"
+    print subprocess.check_output('git commit -m '+ message, shell=True)
+    commitid = subprocess.check_output("git rev-parse HEAD", shell=True)
+    """pustim kod"""
+    
+    os.chdir(base)
+    outcome = subprocess.check_output(code, shell=True)
+    
+    print "johoooo\n\njolo"
+    print "comit"
+    print commitid
+    print "outcome"
+    print outcome
+    print "param"
+    print params
+    print code
+    """savnem potrebne"""
+    
+    
 
 def main(argv):
        
