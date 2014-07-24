@@ -4,41 +4,56 @@ import getopt
 import datetime
 import subprocess
 
+#global todo
+"""
+rozhodit do viac suborov, 
+porobit csv nacitavanie
+
+"""
+
 base = os.getcwd()
 gitbase = subprocess.check_output('git rev-parse --show-toplevel', shell= True).strip('\n')
 end = "/snaps/" 
+gitwork = gitbase+end
+
+def getfile(name,opt):
+    f = open(name,opt)
+    pom  =f.read()
+    f.close()
+    return [x.split(' ') for x in pom.rstrip(' \n ').split('\n')]
+
 
 def routinecheck():
     """kukni ci mas pozadovanu strukturu, ak nie tak vytvor"""
-    print "i am at: "+base
-    print "git is: "+ gitbase
+    #print "i am at: "+base
+    #print "git is: "+ gitbase
     """filova struktura"""
     try:
-        os.stat(base+end)
+        os.stat(gitwork)
     except:
-        print "creating snaps"
-        os.mkdir(base+end)
+        print "creating snaps (first run)"
+        os.mkdir(gitwork)
     
     """zoznam suborov + databaz"""
-    f = open(base+end+"list","a")
+    f = open(gitwork+"list","a")
     f.close()
     
-    f = open(base+end+"runs","a")
+    f = open(gitwork+"runs","a")
     f.close()
     
 
 
-def add(fil): #ked je git tak pointless
+def add(fil): #ked je git tak zoznam suborov na ktore ma ist git add
     """klasicka rutina + adnutie filu"""
     routinecheck()
     realfile = base+"/"+fil
     if os.path.isfile(realfile) and os.path.exists(realfile):
         """adni ho"""
         #checkni zoznam filov, ci je validny
-        f = open(workbase+"list","a")
+        f = open(gitwork+"list","a")
         """kukni, ci tam este nie je"""
         #todo
-        f.write(fil+" "+fil.split('/')[-1]+"\n")
+        f.write(realfile+" "+fil.split('/')[-1]+"\n")
         f.close()
         print fil+" added succesfully"
         sys.exit(0)
@@ -54,53 +69,115 @@ def delete(fil):
     pass
 
 def save(params, code):
+    #todo: kukni ci sa vobec nieco zmenilo (parametre alebo subor, alebo vysledky)
     routinecheck()
+    
+    if not os.path.exists(os.getcwd()+'/'+params):
+        
+        print "bad param file " + os.getcwd()+params
+        sys.exit(10)
+    
     """asi najlepsie bude, ked sa forkne, lebo to moze trochu trvat""" #todo
-    
-    """posavujeme dokumenty"""
-    """
-    f = open(workbase+"list","r")
-    zoznam = f.read()
-    f.close()
-    
-    for line in zoznam:
-        if( len(line.split(" ")) != 2):
-            print "Bad list format" #neni dobry zoznam suborov. pokracovat aj tak?
-            sys.exit(0)
-        else:
-    """
-    """pusnem"""
-    os.chdir(gitbase)
     time = datetime.datetime.now()
+    timetag = str(time).replace(" ","_")
     
-    message = " 'Loger commit: "+str(time) + "'"
-    print "Committing"
-    print subprocess.check_output('git commit -am '+ message, shell=True)
-    commitid = subprocess.check_output("git rev-parse HEAD", shell=True)
-    """pustim kodik"""
-    
+    """pustim kodik a ulozim output"""
+            
+    print "Code is running"
     os.chdir(base)
-    outcome = subprocess.check_output(code, shell=True)
+    output = subprocess.check_output(code, shell=True)
+    os.chdir(gitwork)
+    out = open ("out_"+timetag, 'w')
+    out.write(output)
+    out.close()
     
-    print "johoooo\n\njolo"
-    print "comit"
-    print commitid
-    print "outcome"
-    print outcome
-    print "param"
-    print params
-    print code
+    """savne parametre"""
+    par = open("par_"+timetag,'w')
+    os.chdir(base)
+    par.write(open(params,'r').read())
+    par.close()
+    
+    """pusnem"""
+    os.chdir(gitwork)
+    fil = open("list",'r')
+    lis = fil.read().rstrip(' \n ').split('\n')
+    fil.close()
+    os.chdir(gitbase)
+    if len(lis)==0 or lis==['']:
+        print "no file to track"
+    else:
+        for l in lis:
+            x = l.split(' ')
+            if len(x)!=2:
+                print "daco sa pokazilo, asi nieco neexistuje"
+                print lis
+                sys.exit()
+            else:
+                pom = os.system('git add '+ x[0].lstrip(gitbase))
+                print "added "+x[0]
+            
+        
+    
+    
+    message = " 'Loger commit: "+ timetag + "'"
+    commitid = ""
+    try:
+        subprocess.check_output('git commit -m'+ message, shell=True)
+        commitid = subprocess.check_output("git rev-parse HEAD", shell=True).strip('\n')
+        print "Committed"
+    
+    except:
+        print "nothing to commit, codes are same"
+        os.chdir(gitwork)
+        runs = open('runs','r')
+        commitid = runs.read().rstrip('\n').split('\n')[-1].split(' ')[0] #vyhodi commitid posledneho uspesneho comitu, ktoreho vysledky sa ukladali
+        runs.close()
+    if commitid=='':
+        commitid = subprocess.check_output("git rev-parse HEAD", shell=True).strip('\n')
+        
+        #sem treba dat posledny commit, nie nutne posledny iny
     """savnem potrebne"""
+    os.chdir(gitbase+end)
+    runy = open("runs",'a')
+    runy.write(commitid+" "+timetag + " " + params+"\n")
+    runy.close()
+    print "saved"
+    print "time:"+ timetag,
+    print "id: "+commitid, 
+    print "params: " + params
     
+    
+def man():
+    #urobit zoznam prikazov a tomu len narubat funkcie
+    print "MAN PAGE"
+    print "-h help"
+    print "-a [file]: adne file ktory potom aduje do gitu"
+    print """-p [file] [code]: zoberie code a spusti pricom ulozi jeho vystup a ulozi file ako parametre. potom zobere zoznam naadovanych suborov a commitne to."""
+    print "-s : ukaze zoznam runov"
+    print "-d : difne dva commity"
+    print "-l : list trackovanych suborov"
     
 
+def show():
+    routinecheck()
+    os.chdir(gitwork)
+    zoznam = getfile('runs','r')    
+    count=0
+    if zoznam == [['']]:
+        print "empty"
+        return
+    for run in zoznam:
+        count+=1
+        timetag = run[2]
+        print str(count)+" "+run[1][5:-7]+" "+ run[2].split(' ')[0] + ' ' + run[0][:6] + ' '
+    
 def main(argv):
        
     execute = ''
     params = ''
    
     try:
-        opts, args = getopt.getopt(argv,"a:p:")
+        opts, args = getopt.getopt(argv,"a:p:hs") #dorobit message
     except getopt.GetoptError:
         print 'bad format'
         sys.exit(0)
@@ -112,14 +189,18 @@ def main(argv):
             """som poadoval"""
          
         elif opt in ("-p"):
-            print "params",
+            print "saved",
             print arg
             """tu sa savuje"""
             save(arg, " ".join(args))
-            
-                
-    print "args",
-    print args
+        
+        elif opt in ('-h', '--help', 'help'):
+            man()
+        
+        elif opt==('-s'):
+            show()
+    
+    pass
 
 
 if __name__ == "__main__":
