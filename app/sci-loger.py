@@ -3,6 +3,7 @@ import os, sys
 import getopt
 import datetime
 import subprocess
+import csv
 
 #global todo
 """
@@ -20,7 +21,7 @@ def getfile(name,opt):
     f = open(name,opt)
     pom  =f.read()
     f.close()
-    return [x.split(' ') for x in pom.rstrip(' \n ').split('\n')]
+    return filter(lambda q: q!=[''], [x.split(' ') for x in pom.rstrip(' \n ').split('\n')])
 
 
 def routinecheck():
@@ -50,12 +51,19 @@ def add(fil): #ked je git tak zoznam suborov na ktore ma ist git add
     if os.path.isfile(realfile) and os.path.exists(realfile):
         """adni ho"""
         #checkni zoznam filov, ci je validny
-        f = open(gitwork+"list","a")
+        f = open(gitwork+"list","r")
         """kukni, ci tam este nie je"""
         #todo
-        f.write(realfile+" "+fil.split('/')[-1]+"\n")
+        zoznam = f.read().strip(' \n ').split('\n')
+        novy = not realfile in [x.split(' ')[0] for x in zoznam]  #kukni, ci som taky subor uz nepridal
         f.close()
-        print fil+" added succesfully"
+        if novy:
+            f = open(gitwork+"list","a")
+            f.write(realfile+" "+fil.split('/')[-1]+"\n")
+            f.close()
+            print fil+" added succesfully"
+        else:
+            print "File "+fil+" is already in list"
         sys.exit(0)
     else:
         """neni to validne, hod hlasku"""
@@ -66,7 +74,27 @@ def add(fil): #ked je git tak zoznam suborov na ktore ma ist git add
 
 def delete(fil):
     """mazanie pribudne casom asi"""
-    pass
+    routinecheck()
+    realfile = base+"/"+fil
+    
+    """adni ho"""
+    #checkni zoznam filov, ci je validny
+    
+    f = open(gitwork+"list","r")
+    """kukni, ci tam este nie je"""
+    #todo
+    zoznam = f.read().strip(' \n ').split('\n')
+    isin = realfile in [x.split(' ')[0] for x in zoznam]  #kukni, ci som taky subor uz nepridal
+    f.close()
+    if isin:
+        f = open(gitwork+"list","w")
+        f.write('\n'.join(filter( lambda x: x.split(' ')[0]!=realfile , zoznam)))
+        f.close()
+        print fil+" removed succesfully"
+    else:
+        print "File "+fil+" was not in list"
+    sys.exit(0)
+    
 
 def save(params, code):
     #todo: kukni ci sa vobec nieco zmenilo (parametre alebo subor, alebo vysledky)
@@ -152,10 +180,12 @@ def man():
     print "MAN PAGE"
     print "-h help"
     print "-a [file]: adne file ktory potom aduje do gitu"
+    print "-r [file]: removne file ktory potom aduje do gitu"
     print """-p [file] [code]: zoberie code a spusti pricom ulozi jeho vystup a ulozi file ako parametre. potom zobere zoznam naadovanych suborov a commitne to."""
     print "-s : ukaze zoznam runov"
     print "-d : difne dva commity"
     print "-l : list trackovanych suborov"
+    
     
 
 def show():
@@ -171,15 +201,26 @@ def show():
         timetag = run[2]
         print str(count)+" "+run[1][5:-7]+" "+ run[2].split(' ')[0] + ' ' + run[0][:6] + ' '
     
+def showtracked():
+    routinecheck()
+    os.chdir(gitwork)
+    zoznam = getfile('list','r')
+    count = 0
+    for x in zoznam:
+        count+=1
+        print str(count)+" ..."+x[0].lstrip(gitbase)
+
+def executeall
+
 def main(argv):
        
     execute = ''
     params = ''
    
     try:
-        opts, args = getopt.getopt(argv,"a:p:hs") #dorobit message
+        opts, args = getopt.getopt(argv,"a:r:p:lhs") #dorobit message
     except getopt.GetoptError:
-        print 'bad format'
+        print 'bad argument format'
         sys.exit(0)
     for opt, arg in opts:
         if opt == '-a':
@@ -187,7 +228,17 @@ def main(argv):
             print arg
             add(arg)
             """som poadoval"""
-         
+        elif opt == '-r':
+            print "wana remove",
+            print arg
+            delete(arg)
+            """som poadoval"""
+        elif opt==('-s'):
+            show()
+        
+        elif opt==('-l'):
+            showtracked()
+            
         elif opt in ("-p"):
             print "saved",
             print arg
@@ -197,8 +248,6 @@ def main(argv):
         elif opt in ('-h', '--help', 'help'):
             man()
         
-        elif opt==('-s'):
-            show()
     
     pass
 
