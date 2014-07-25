@@ -9,15 +9,20 @@ import csv
 """
 rozhodit do viac suborov, 
 porobit csv nacitavanie
+rozumnejsie handlovanie argumentov
+poriadny man
+menej vypisov
 
+function:
+loadovanie starych  kodov/pokusov a parametrov
 """
 
 base = os.getcwd()
 gitbase = subprocess.check_output('git rev-parse --show-toplevel', shell= True).strip('\n')
-end = "/snaps/" 
+end = "/.snaps/" 
 gitwork = gitbase+end
 
-def getfile(name,opt):
+def getfile(name,opt='r'):
     f = open(name,opt)
     pom  =f.read()
     f.close()
@@ -45,7 +50,7 @@ def routinecheck():
 
 
 def add(fil): #ked je git tak zoznam suborov na ktore ma ist git add
-    """klasicka rutina + adnutie filu"""
+    """klasicka rutina + adnutie filu, ktory sa pri kaydom komite bude addovat"""
     routinecheck()
     realfile = base+"/"+fil
     if os.path.isfile(realfile) and os.path.exists(realfile):
@@ -73,7 +78,7 @@ def add(fil): #ked je git tak zoznam suborov na ktore ma ist git add
 
 
 def delete(fil):
-    """mazanie pribudne casom asi"""
+    """Prestane comitovat dany subor (prestane ho addovat)"""
     routinecheck()
     realfile = base+"/"+fil
     
@@ -137,7 +142,7 @@ def save(params, code):
         for l in lis:
             x = l.split(' ')
             if len(x)!=2:
-                print "daco sa pokazilo, asi nieco neexistuje"
+                print "daco sa pokazilo, zly format listu"
                 print lis
                 sys.exit()
             else:
@@ -163,15 +168,13 @@ def save(params, code):
     if commitid=='':
         commitid = subprocess.check_output("git rev-parse HEAD", shell=True).strip('\n')
         
-        #sem treba dat posledny commit, nie nutne posledny iny
     """savnem potrebne"""
     os.chdir(gitbase+end)
     runy = open("runs",'a')
     runy.write(commitid+" "+timetag + " " + params+"\n")
     runy.close()
-    print "saved"
     print "time:"+ timetag,
-    print "id: "+commitid, 
+    print "id: "+commitid[:6],
     print "params: " + params
     
     
@@ -185,6 +188,9 @@ def man():
     print "-s : ukaze zoznam runov"
     print "-d : difne dva commity"
     print "-l : list trackovanych suborov"
+    print "-e [code] [zoznam]: pusti kod (meno daneho bash scriptu) na vysledkoch zo zoznamu (cisla,mozno casom dake mena, alebo tagy)"
+    print "-E [code]: pusti [code] (meno daneho bash scriptu) na vsetkych vystupoch a printne vysledok"
+    
     
     
 
@@ -208,9 +214,27 @@ def showtracked():
     count = 0
     for x in zoznam:
         count+=1
-        print str(count)+" ..."+x[0].lstrip(gitbase)
+        print str(count)+" .../"+x[0].lstrip(gitbase)
 
-def executeall
+def executeall(script, nakom=None):
+    os.chdir(gitwork)
+    zoznam = getfile('runs')
+    if nakom is None:
+        nakom = range(len(zoznam))
+    os.chdir(base)
+    cout = 0
+    for xx in nakom:
+        x=int(xx)
+        cout = x
+        run = zoznam[x-1]
+        outfilename = gitwork+"out_"+run[1]
+        if os.path.exists(outfilename):
+            output=subprocess.check_output('bash '+script + ' ' + outfilename, shell=True)
+            print str(cout)+ ' ' + run[1] + " out: "+output
+        else:
+            print "Nonexisting file"
+    pass
+    
 
 def main(argv):
        
@@ -218,34 +242,44 @@ def main(argv):
     params = ''
    
     try:
-        opts, args = getopt.getopt(argv,"a:r:p:lhs") #dorobit message
+        opts, args = getopt.getopt(argv,"a:r:p:e:E:lhs") #dorobit message
     except getopt.GetoptError:
         print 'bad argument format'
         sys.exit(0)
+    #print opts
+    #print args
     for opt, arg in opts:
         if opt == '-a':
-            print "wana add",
-            print arg
+            #pridavanie
             add(arg)
             """som poadoval"""
         elif opt == '-r':
-            print "wana remove",
+            #odoberanie
             print arg
             delete(arg)
             """som poadoval"""
         elif opt==('-s'):
+            #ukaze comity
             show()
         
+        elif opt==('-e'):
+            #pusti script na niektorych vystupoch
+            executeall(arg,args)
+        
+        elif opt==('-E'):
+            #pusti script na vsetkych vystupoch
+            executeall(arg)
+        
         elif opt==('-l'):
+            #list trackovanych suborov
             showtracked()
             
         elif opt in ("-p"):
-            print "saved",
-            print arg
-            """tu sa savuje"""
+            #savne s danym parametrovym suborom
             save(arg, " ".join(args))
         
         elif opt in ('-h', '--help', 'help'):
+            #manpage
             man()
         
     
