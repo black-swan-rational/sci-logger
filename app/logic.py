@@ -206,23 +206,22 @@ def runExperiment(code):
     
     
     print "Code is running"
-    os.chdir(base)
-    #todo fork code execution
-    
-    dobehlo = True
-    output = "Error"
-    try:
-        output = subprocess.check_output(code, shell=True)
-    except:
-        dobehlo=False
     
     os.chdir(gitwork)
     os.mkdir(timetag)
     os.chdir(timetag)
     os.mkdir('outputs')
     out = open ("code_out", 'w')
-    out.write(output)
     out.close()
+    
+    os.chdir(base)
+    #todo fork code execution
+    dobehlo = True
+    exitcode = 0
+    try:
+        exitcode = subprocess.call(code+"|tee "+gitwork+"code_out", shell=True)
+    except:
+        dobehlo=False
     
     """save parameters"""
     
@@ -231,7 +230,7 @@ def runExperiment(code):
     for line in trackedoutputs:
         realfile = line[0]
         if os.path.isfile(realfile) and os.path.exists(realfile):
-            subprocess.check_output("cp " + realfile + " " + gitwork + timetag+'/outputs/'+line[0].split('/')[-1], shell=True)
+            subprocess.call("cp " + realfile + " " + gitwork + timetag+'/outputs/'+line[0].split('/')[-1], shell=True)
         else:
             print realfile+ " Does no exist"
         
