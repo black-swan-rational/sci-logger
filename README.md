@@ -2,22 +2,25 @@ sci-logger
 ==========
 
 ####Overview
-Táto utilitka slúži na archyvovanie experimetnálnych parametrov pomocou gitu. Zatiaľ je nutné, aby priečinok v ktorom ju spúšťame bol zároveň aj git repozitárom (násilná výroba repozitára pribudne časom)
+Sci-loger is scientific experiment version control for linux. It allows you to easily track all experimental codes, parameters and outputs between every groundbreaking genial idea. And yes, it heavily depends on git.
 
-Vieme ňou spustiť skript a povedať jej, aké parametre daný skript dostal, ona všeteky súbory ktoré chceme commitne do gitu (uloží) a uloží si v priešinku .snaps/ ktorý je tam, kde aj .git/, dané parametre a outcome programu. Na daných outcomoch potom vieme pomocou -e púšťať rôzne vyzualizačné skripty (tie si ale musí napísať každý sám, ale aj to čaosm bude). Vsetko co si uklada je dane id-ckom komitu a casom vykonoania akcie. 
+Just tell (write) it what files (codes) do you want to keep track of, what outputs do you want to save and run some code. Code is committed (.git/), output is saved (cp to .snaps/- best version control ever), everything is fine.
+
+Finally, we can process those outputs and do some data magic with them.
+
+As you can imagine, there is a little dependency on git + now it is possible to use logger only in file already under git version control.
 
 ####MAN PAGE
-* -h help
-* -a [file]: adne file ktory potom aduje do gitu
-* -r [file]: removne file ktory potom aduje do gitu
-* -p [file] [code]: zoberie code a spusti pricom ulozi jeho vystup a ulozi file ako parametre. potom zobere zoznam naadovanych suborov a commitne to.
-* -s : ukaze zoznam runov
-* -d : difne dva commity
-* -l : list trackovanych suborov
-* -e [code] [zoznam]: pusti kod (meno daneho bash scriptu) na vysledkoch zo zoznamu (cisla,mozno casom dake mena, alebo tagy)
-* -E [code]: pusti [code] (meno daneho bash scriptu) na vsetkych vystupoch a prntne vysledok
+.-h help
+.-a [file]: add file to list of tracked files"
+.-r [file]: remove file from list of tracked files"
+.-x [file] [code]: run given code (bashscript). save output (standard output), save param file and commit tracked files"""
+.-s : Show list of commits"
+.-d : dif two commits (states of experiment)" #todo
+.-l : show List of tracked files"
+.-o [file]: add file to list of tracked output files"
+.-E [code] [file]: run [code] (bash script) on [file] from every commit"
 
+####Todo
 
-####Co pribudne casom
-
-automaticka vyzualizacia, rozumnejsie vstupne parametre, man, viac user friendly, menej vystupov, daka analytika, filtrovanie a clastrovanie vysledkov po nejakych zmenach, tagovanie, pozeranie si difov commitov
+automatic visualization, some default processing scripts, man, filtering, tagging, easily diff two states of experiments and restore some previous state
