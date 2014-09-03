@@ -22,7 +22,7 @@ def man():
     print "-r [file]: remove file from list of tracked files"
     print """-x [file] [code]: run given code (bashscript). save output (standard output), save param file and commit tracked files"""
     print "-s : Show list of commits"
-    print "-d : dif two commits (states of experiment)" #todo
+    #print "-d : dif two commits (states of experiment)" #todo
     print "-l : show List of tracked files"
     print "-o [file]: add file to list of tracked output files"
     #print "-e [code] [zoznam]: run [code] (bash scriptu) on all results in list (numbers)" #todo: names or tags
