@@ -11,15 +11,15 @@ Finally, we can process those outputs and do some data magic with them.
 As you can imagine, there is a little dependency on git + now it is possible to use logger only in file already under git version control.
 
 ####MAN PAGE
-.-h help
-.-a [file]: add file to list of tracked files"
-.-r [file]: remove file from list of tracked files"
-.-x [file] [code]: run given code (bashscript). save output (standard output), save param file and commit tracked files"""
-.-s : Show list of commits"
-.-d : dif two commits (states of experiment)" #todo
-.-l : show List of tracked files"
-.-o [file]: add file to list of tracked output files"
-.-E [code] [file]: run [code] (bash script) on [file] from every commit"
+* -h help
+* -a [file]: add file to list of tracked files"
+* -r [file]: remove file from list of tracked files"
+* -x [file] [code]: run given code (bashscript). save output (standard output), save param file and commit tracked files"""
+* -s : Show list of commits"
+* -d : dif two commits (states of experiment)" #todo
+* -l : show List of tracked files"
+* -o [file]: add file to list of tracked output files"
+* -E [code] [file]: run [code] (bash script) on [file] from every commit"
 
 ####Todo
 
