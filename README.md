@@ -19,7 +19,7 @@ As you can imagine, there is a little dependency on git + now it is possible to 
 * -d : dif two commits (states of experiment)" #todo
 * -l : show List of tracked files"
 * -o [file]: add file to list of tracked output files"
-* -E [code] [file]: run [code]  (bash script) on [file] from every commit"
+* -E [code] [file]: run [code].  (bash script) on [file] from every commit"
 
 ####Todo
 
