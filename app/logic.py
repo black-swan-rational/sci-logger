@@ -3,7 +3,8 @@ import os, sys
 import datetime
 import subprocess
 import csv
-
+import pickle
+import shutil
 #global todo
 """
 rozhodit do viac suborov, 
@@ -29,6 +30,16 @@ def getfile(name,opt='r'):
     pom  =f.read()
     f.close()
     return filter(lambda q: q!=[''], [x.split(' ') for x in pom.rstrip(' \n ').split('\n')])
+
+def getruns():
+    f = open(gitwork+"runs",'r')
+    pom  =f.read()
+    f.close()
+    if pom =="":
+        return []
+    else:
+        return pickle.loads(pom)
+    pass
 
 
 def routinecheck():
@@ -91,7 +102,7 @@ def addOutput(fil):
             print "File "+ realfile + " does not exists. Add anyway? (y/n)"
             what = raw_input()
         if what== 'n':
-            sys.exit(0)
+            return
         
     """add it"""
     f = open(gitwork+"outputs","r")
@@ -159,7 +170,7 @@ def deleteOutput(fil):
     
     
 
-def runExperiment(code):
+def runExperiment(msq,code):
     """ will save current state of code with its outputs and parameters"""
     #todo: kukni ci sa vobec nieco zmenilo (parametre alebo subor, alebo vysledky)
     #todo: code davat ako bashscript (meno suboru), nechat usera napisat malu spravu (donutit ho k nej) 
@@ -180,11 +191,11 @@ def runExperiment(code):
             if len(x)!=2:
                 print "something is wrong, bad file list format: ",
                 print lis
-                sys.exit()
+                return
             else:
                 #todo: error handling
                 pom = os.system('git add '+ x[0].lstrip(gitbase))
-                print "added "+x[0]
+                #print "added "+x[0]
             
     """commit"""
     message = " 'Loger commit: "+ timetag + "'"
@@ -197,10 +208,7 @@ def runExperiment(code):
     except:
         """todo> execept exactly this error (error number)"""
         print "nothing to commit, codes are same"
-        os.chdir(gitwork)
-        runs = open('runs','r')
-        commitid = runs.read().rstrip('\n').split('\n')[-1].split(' ')[0] #vyhodi commitid posledneho uspesneho comitu, ktoreho vysledky sa ukladali
-        runs.close()
+        
     if commitid=='':
         commitid = subprocess.check_output("git rev-parse HEAD", shell=True).strip('\n')
     
@@ -219,10 +227,9 @@ def runExperiment(code):
     dobehlo = True
     exitcode = 0
     try:
-        exitcode = subprocess.call(code+"|tee "+gitwork+"code_out", shell=True)
+        exitcode = subprocess.call("stdbuf -oL "+code+"|tee "+gitwork+"code_out", shell=True)
     except:
         dobehlo=False
-    
     """save parameters"""
     
     os.chdir(gitwork)
@@ -237,41 +244,44 @@ def runExperiment(code):
     """run code and save output from standar output""" #todo: save some output files
     """save everythink needed"""
     os.chdir(gitbase+end)
-    runy = open("runs",'a')
-    runy.write(commitid+" "+timetag + " " + str(dobehlo) + " "+ code +"\n")
+    runobject = {"commit":commitid, "timetag":timetag, "message":msq, "code":code}
+    runs = getruns()
+    runs.append(runobject)
+    runy = open("runs",'w')
+    runy.write(pickle.dumps(runs))
     runy.close()
-    print "time:"+ timetag,
-    print "id: "+commitid[:6],
-    print "fin: "+ str(dobehlo)
-    print "code: " + code
+    print timetag+ " " +commitid[:6]
 
 def show():
     """ print  """
     routinecheck()
     os.chdir(gitwork)
-    zoznam = getfile('runs','r')    
+    zoznam = getruns()
     count=0
-    if zoznam == [['']]:
-        print "empty"
+    if zoznam == None:
         return
     for run in zoznam:
         count+=1
-        timetag = run[2]
-        print str(count)+" "+run[1][5:-7]+" "+ run[2].split(' ')[0] + ' ' + run[0][:6] + ' '
+        print str(count),
+        print str(run["timetag"]).split('.')[0]+" ",
+        print run["commit"][:6]+" ",
+        print run["message"].rstrip('\n')
     
 def showtracked():
     """showe list of tracked files"""
     routinecheck()
-    print "tracked:"     
     os.chdir(gitwork)
     zoznam = getfile('list','r')
+    if len(zoznam)!=0:
+        print "tracked:"     
     count = 0
     for x in zoznam:
         count+=1
         print str(count)+" .../"+x[0].lstrip(gitbase)
     
-    print "outputs:"
     zoznam = getfile('outputs','r')
+    if len(zoznam)!=0:
+        print "outputs:"
     count = 0
     for x in zoznam:
         count+=1
@@ -289,6 +299,11 @@ def executeall(nakom, script): #todo
         print output,
     
 
+def reset():
+    routinecheck()
+    shutil.rmtree(gitwork,True)
+    routinecheck()
+    
 
 def listfiles(nakom, prin=False): #todo
     """return list of scecific output files"""
