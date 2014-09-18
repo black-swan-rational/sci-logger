@@ -227,7 +227,7 @@ def runExperiment(msq,code):
     dobehlo = True
     exitcode = 0
     try:
-        exitcode = subprocess.call("stdbuf -oL "+code+"|tee "+gitwork+"code_out", shell=True)
+        exitcode = subprocess.call("stdbuf -oL "+code+"|tee "+gitwork+timetag+"/code_out", shell=True)
     except:
         dobehlo=False
     """save parameters"""
@@ -310,12 +310,13 @@ def listfiles(nakom, prin=False): #todo
     if nakom == 'code_out':
         nakom = '../'+nakom
     os.chdir(gitwork)
-    zoznam = getfile('runs')
+    zoznam = getruns()
     namelist = []
     for x in zoznam:
-        tag = x[1]
+        tag = x["timetag"]
         outfilename = gitwork+tag+"/outputs/"+nakom
         if os.path.exists(outfilename) and os.path.isfile(outfilename):
+            outfilename= os.path.abspath(outfilename)
             namelist.append(outfilename)
             if prin:
                 print outfilename
