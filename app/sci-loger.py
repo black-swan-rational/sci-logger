@@ -37,7 +37,7 @@ def main(argv):
     params = ''
     #print argv
     try:
-        opts, args = getopt.getopt(argv,"p:arARxe:n:lhsQ") #todo message
+        opts, args = getopt.getopt(argv,"p:arARxXe:n:lhsQ") #todo message
     except getopt.GetoptError:
         print 'bad argument format'
         sys.exit(0)
@@ -94,7 +94,15 @@ def main(argv):
             runExperiment(msg," ".join(args))
             return
         
-        elif opt in ('-h', '--help', 'help'):
+        elif opt in ("-X"):
+            #run experiment
+            #print "Write comment to this experiment"
+            #msg = sys.stdin.readline()
+            msg = ""
+            runExperiment(msg," ".join(args))
+            return
+        
+        elif opt in ('-h', '--help'):
             #manpage
             man()
             return

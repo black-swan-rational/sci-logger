@@ -12,17 +12,18 @@ As you can imagine, there is a little dependency on git + now it is possible to 
 
 ####MAN PAGE
 
-* -h help
-* -a [file]: add file to list of tracked files
+* -h :help
+* -a [file]: add file to list of tracked files. Those files will be added to commit.
 * -r [file]: remove file from list of tracked files
 * -A [file]: add file to list of tracked output files (will be copied)
 * -R [file]: remove file from list of tracked output files 
-* -x [code]: run given code (like python experimet.py). save output (standard output to file code_out, posibly Error) and other tracked output files, commit tracked files
-* -s : Show list of tries
+* -x [code]: run given code (like python experimet.py). save output (standard output to file code_out, posibly Error) and other tracked output files, commit tracked files. This will promt you for message that (like in git)
+* -X [code]: same as -x but will not promt you for message. 
+* -s : Show list of experiments
 * -l : show List of tracked files
 * -e [name] [code]: run [code] (bash scriptu) on all results in list (numbers), effectively it will peform code < name on each file
 * -n [name]: print newline separated list of output files with given name (like code_out)
+* -Q : dellete all experiments (but commits will reamain) and reset list of runs and tracked files. 
 
 ####Todo
-
-automatic visualization, some default processing scripts, man, filtering, tagging, easily diff two states of experiments and restore some previous state
+automatic visualization, some default processing scripts, man, filtering, easily diff two states of experiments and restore some previous state

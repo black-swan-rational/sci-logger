@@ -1,6 +1,6 @@
 import sqlite3 as sql
 import os, sys
-import datetime
+import datetime, time
 import subprocess
 import csv
 import pickle
@@ -15,6 +15,8 @@ menej vypisov
 
 functions:
 loading old codes/experiments with given parameters file
+test, ci nieco trackujem
+okaslat commit spravu bez messagu
 """
 
 base = os.getcwd()
@@ -42,13 +44,14 @@ def getruns():
     pass
 
 
-def routinecheck():
+def routinecheck(reseting=False):
     """check for file structure and create it if needed"""
     """file structure"""
     try:
         os.stat(gitwork)
     except:
-        print "creating folder structure (first run)"
+        if(not reseting):
+            print "creating folder structure (first run)"
         os.mkdir(gitwork)
     
     """list of tracked files + list of tries/experiments (commits)"""
@@ -227,11 +230,25 @@ def runExperiment(msq,code):
     dobehlo = True
     exitcode = 0
     try:
-        exitcode = subprocess.call("stdbuf -oL "+code+"|tee "+gitwork+timetag+"/code_out", shell=True)
+        #run code and wirte down times
+        exitcode = subprocess.call("echo $(date +%s%N)> .begintime; stdbuf -oL "+code+"|tee "+gitwork+timetag+"/code_out ; echo $(date +%s%N) > .endtime; ", shell=True)
+        
     except:
         dobehlo=False
-    """save parameters"""
     
+    #compute program runetime
+    begintime = -1;
+    endtime = -2;
+    if os.path.isfile(base+"/.begintime"):
+        begintime = int(open(".begintime").read())/1000000
+    
+    if os.path.isfile(base+"/.endtime"):
+        endtime = int(open(".endtime").read())/1000000
+    runtime = -1
+    if( endtime>0 and begintime >0):
+        runtime = endtime-begintime
+    
+    """save parameters"""
     os.chdir(gitwork)
     trackedoutputs = getfile('outputs')
     for line in trackedoutputs:
@@ -244,13 +261,14 @@ def runExperiment(msq,code):
     """run code and save output from standar output""" #todo: save some output files
     """save everythink needed"""
     os.chdir(gitbase+end)
-    runobject = {"commit":commitid, "timetag":timetag, "message":msq, "code":code}
+    
+    runobject = {"commit":commitid, "timetag":timetag, "message":msq, "code":code, "runtime":runtime}
     runs = getruns()
     runs.append(runobject)
     runy = open("runs",'w')
     runy.write(pickle.dumps(runs))
     runy.close()
-    print timetag+ " " +commitid[:6]
+    print timetag+ " " +commitid[:6] + " " + str(runtime)+"ns"
 
 def show():
     """ print  """
@@ -265,6 +283,7 @@ def show():
         print str(count),
         print str(run["timetag"]).split('.')[0]+" ",
         print run["commit"][:6]+" ",
+        print str(run["runtime"])+" ",
         print run["message"].rstrip('\n')
     
 def showtracked():
@@ -300,10 +319,10 @@ def executeall(nakom, script): #todo
     
 
 def reset():
-    routinecheck()
+    routinecheck(True)
     shutil.rmtree(gitwork,True)
-    routinecheck()
-    
+    routinecheck(True)
+    print "Reset done"
 
 def listfiles(nakom, prin=False): #todo
     """return list of scecific output files"""
