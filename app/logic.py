@@ -20,7 +20,12 @@ okaslat commit spravu bez messagu
 """
 
 base = os.getcwd()
-gitbase = subprocess.check_output('git rev-parse --show-toplevel', shell= True).strip('\n')
+try:
+    gitbase = subprocess.check_output('git rev-parse --show-toplevel', shell= True).strip('\n')
+except:
+    print "git is not inicialized"
+    print "please inicialize git repozitory in this directory (git init)"
+    sys.exit(0)
 end = "/.snaps/" 
 gitwork = gitbase+end
 
@@ -72,6 +77,7 @@ def add(fil):
     #todo: check for ./../.s 
     routinecheck()
     realfile = base+"/"+fil
+    os.path.abspath(realfile)
     if os.path.isfile(realfile) and os.path.exists(realfile): #if it is real file
         """add it"""
         f = open(gitwork+"list","r")
@@ -99,6 +105,8 @@ def addOutput(fil):
     #todo: check for ./../.s 
     routinecheck()
     realfile = base+"/"+fil
+    os.path.abspath(realfile)
+    
     if not (os.path.isfile(realfile) and os.path.exists(realfile)): #if it is not a real file, display warning
         what = ''
         while what.lower() not in 'ynz' or len(what)!=1:
@@ -128,8 +136,8 @@ def deleteTracked(fil):
     """remove file from list of tracked files (will not be added in experimental commits)"""
     #todo: check for ./../.s 
     routinecheck()
-    realfile = base+"/"+fil
-    
+    realfile = base+"/"+fil    
+    os.path.abspath(realfile)
     """adni ho"""
     #checkni zoznam filov, ci je validny
     
@@ -153,7 +161,7 @@ def deleteOutput(fil):
     #todo: check for ./../.s 
     routinecheck()
     realfile = base+"/"+fil
-    
+    os.path.abspath(realfile)
     """adni ho"""
     #checkni zoznam filov, ci je validny
     
@@ -248,8 +256,12 @@ def runExperiment(msq,code):
     if( endtime>0 and begintime >0):
         runtime = endtime-begintime
     
-    """save parameters"""
+    """save outputs and list of outpusts"""
+    
     os.chdir(gitwork)
+    subprocess.call("cp " + 'outputs' + " " + gitwork + timetag+'outputs', shell=True)
+    subprocess.call("cp " + 'list' + " " + gitwork + timetag+'list', shell=True)
+    
     trackedoutputs = getfile('outputs')
     for line in trackedoutputs:
         realfile = line[0]
@@ -270,7 +282,7 @@ def runExperiment(msq,code):
     runy.close()
     print timetag+ " " +commitid[:6] + " " + str(runtime)+"ns"
 
-def show():
+def showtries():
     """ print  """
     routinecheck()
     os.chdir(gitwork)
@@ -342,3 +354,17 @@ def listfiles(nakom, prin=False): #todo
         
     
     return namelist
+
+def rollback(kam):
+    """todo fakt rollbacknut, len enviem ci na tvrdo alebo dat outputy dade inde"""
+    routinecheck()
+    os.chdir(gitwork)
+    zoznam = getruns()
+    count=0
+    if len(zoznam) < kam:
+        print "Invalid id. ("+str(len(zoznam))+" tries)"
+        return
+    run = zoznam[kam-1]
+    print str(run["timetag"]).split('.')[0]+" ",
+    print run["commit"][:6]+" ",
+    return
