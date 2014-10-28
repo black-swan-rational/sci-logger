@@ -355,7 +355,7 @@ def listfiles(nakom, prin=False): #todo
     
     return namelist
 
-def rollback(kam):
+def rollback(kam,kto):
     """todo fakt rollbacknut, len enviem ci na tvrdo alebo dat outputy dade inde"""
     routinecheck()
     os.chdir(gitwork)
@@ -366,5 +366,17 @@ def rollback(kam):
         return
     run = zoznam[kam-1]
     print str(run["timetag"]).split('.')[0]+" ",
-    print run["commit"][:6]+" ",
+    print run["commit"][:6]+" " ,
+    print run["message"]
+    for f in kto:
+        ff = os.path.abspath(base+"/"+f)
+        print ff
+        if os.path.exists(ff) and os.path.isfile(ff):
+            #dd
+            subprocess.call("git checkout "+run["commit"][:6]+" "+ff,shell=True)
+            print f+" reseted"
+            
+        else:
+            print f+" does not exist"
+        
     return

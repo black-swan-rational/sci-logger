@@ -23,7 +23,7 @@ As you can imagine, there is a little dependency on git + now it is possible to 
 * -l : show List of tracked files
 * -e [name] [code]: run [code] (bash scriptu) on all results in list (numbers), effectively it will peform code < name on each file
 * -n [name]: print newline separated list of output files with given name (like code_out)
-* -Q : dellete all experiments (but commits will reamain) and reset list of runs and tracked files. 
+* -B [number]: rollback to specific try with [number]-th try. 
 
 ####Todo
-automatic visualization, some default processing scripts, man, filtering, easily diff two states of experiments and restore some previous state
+easy instalation, automatic visualization, some default processing	 scripts, man, filtering, easily diff two states of experiments

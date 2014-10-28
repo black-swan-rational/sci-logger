@@ -28,7 +28,7 @@ def man():
     -e [name] [code]: run [code] (bash scriptu) on all results, effectively it will peform code < name on each file
     -n [name]: print newline separated list of output files with given name (like code_out)
     -Q : reset .snaps (empty list of experiments, tracked files and so on) #todo option for commits
-    -B [number]: rollback to specific try with id [number]. 
+    -B [number][files]: rollback [files] to specific try with [number]-th try. 
     """
     
 def joinfunct(x):
@@ -137,7 +137,7 @@ def main(argv):
         
         elif opt in ("-B"):
             if(arg.isdigit()):
-                rollback(int(arg))
+                rollback(int(arg), args)
             else:
                 print "Input number!"
             return
